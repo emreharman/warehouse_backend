@@ -1,6 +1,6 @@
 // controllers/auth.controller.js
-const jwt = require('jsonwebtoken');
-const User = require('../models/user.model');
+const jwt = require("jsonwebtoken");
+const User = require("../models/user.model");
 
 // JWT token oluştur
 const generateToken = (user) => {
@@ -11,7 +11,7 @@ const generateToken = (user) => {
       email: user.email,
     },
     process.env.JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: "7d" }
   );
 };
 
@@ -21,7 +21,8 @@ exports.register = async (req, res) => {
 
   try {
     const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: 'E-posta zaten kayıtlı' });
+    if (userExists)
+      return res.status(400).json({ message: "E-posta zaten kayıtlı" });
 
     const user = await User.create({ name, email, password, role });
     const token = generateToken(user);
@@ -34,7 +35,7 @@ exports.register = async (req, res) => {
       token,
     });
   } catch (error) {
-    res.status(500).json({ message: 'Kayıt sırasında hata oluştu' });
+    res.status(500).json({ message: "Kayıt sırasında hata oluştu" });
   }
 };
 
@@ -44,20 +45,26 @@ exports.login = async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
+
     if (!user || !(await user.matchPassword(password))) {
-      return res.status(401).json({ message: 'Geçersiz e-posta ya da şifre' });
+      return res.status(401).json({ message: "Geçersiz e-posta ya da şifre" });
     }
 
     const token = generateToken(user);
 
+    // Şifreyi frontend'e göndermeyelim
+    user.password = undefined;
+
     res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
       token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
-    res.status(500).json({ message: 'Giriş sırasında hata oluştu' });
+    res.status(500).json({ message: "Giriş sırasında hata oluştu" });
   }
 };
