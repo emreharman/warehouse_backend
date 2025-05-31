@@ -8,6 +8,7 @@ const variantOptionRoutes = require('./routes/variantOption.routes');
 const customerRoutes = require('./routes/customer.routes');
 const customerAuthRoutes = require('./routes/customerAuth.routes'); // ✅ Yeni ek
 const orderRoutes = require('./routes/order.routes');
+const testRoutes = require('./routes/test.route');
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use('/api/variant-options', variantOptionRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/customers-auth', customerAuthRoutes); // ✅ Auth işlemleri için eklendi
 app.use('/api/orders', orderRoutes);
+app.use('/api', testRoutes);
 
 app.get('/', (req, res) => {
   res.send('Backoffice API çalışıyor 🚀');

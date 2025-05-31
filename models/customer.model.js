@@ -1,12 +1,12 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const addressSchema = new mongoose.Schema({
-  label: { type: String, default: 'Ev' },
+  label: { type: String, default: "Ev" },
   line1: String,
   city: String,
   postalCode: String,
-  country: { type: String, default: 'Türkiye' },
+  country: { type: String, default: "Türkiye" },
 });
 
 const customerSchema = new mongoose.Schema(
@@ -32,6 +32,9 @@ const customerSchema = new mongoose.Schema(
       minlength: 6,
     },
     addresses: [addressSchema],
+
+    orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
+
     resetToken: String,
     resetTokenExpires: Date,
   },
@@ -39,8 +42,8 @@ const customerSchema = new mongoose.Schema(
 );
 
 // Şifre hashleme
-customerSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+customerSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
@@ -51,4 +54,4 @@ customerSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model('Customer', customerSchema);
+module.exports = mongoose.model("Customer", customerSchema);
