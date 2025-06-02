@@ -35,7 +35,8 @@ const orderItemSchema = new mongoose.Schema({
   selectedVariant: selectedVariantSchema,
   quantity: { type: Number, default: 1 },
   designFiles: [String], // CDN URL'leri
-  designMeta: designMetaSchema
+  designMeta: designMetaSchema,
+  note: { type: String },
 }, { _id: false });
 
 // Ana sipariş şeması
@@ -74,4 +75,7 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Order', orderSchema);
+module.exports = {
+  Order: mongoose.model('Order', orderSchema),
+  orderItemSchema // bunu da dışa aktar
+};
