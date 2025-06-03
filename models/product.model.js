@@ -1,35 +1,43 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const variantSchema = new mongoose.Schema({
-  name: String, // opsiyonel özet: "Siyah / L / Premium / Oversize"
+  name: String,
   attributes: {
-    color: String,     // örn: Siyah, Beyaz
-    size: String,      // örn: S, M, L, XL
-    quality: String,   // örn: Standart, Premium
-    fit: String        // örn: Normal, Oversize
+    color: String,
+    size: String,
+    quality: String,
+    fit: String,
   },
-  price: Number,
-  stock: Number,
   discount: {
-    type: Number, // yüzdelik indirim: 20 = %20
-    default: 0
-  }
+    type: Number,
+    default: 0,
+  },
 });
 
-const productSchema = new mongoose.Schema({
-  name: { type: String, required: true }, // "T-shirt - Logo Baskı"
-  description: String,
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category'
+const productSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    description: String,
+    type: {
+      type: String,
+      enum: ["t", "h", "c", "o"], // t: tişört, h: hoodie, c: çocuk, o: diğer
+      required: true,
+    },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+    },
+    images: [String],
+    variants: [variantSchema],
+    price: { type: Number, required: true },
+    stock: { type: Number, required: true },
+    tags: [String],
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
-  images: [String], // CDN'den görsel URL'leri
-  variants: [variantSchema],
-  tags: [String], // opsiyonel: "erkek", "minimal", "beyaz", vs.
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-module.exports = mongoose.model('Product', productSchema);
+module.exports = mongoose.model("Product", productSchema);

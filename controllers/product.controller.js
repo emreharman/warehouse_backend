@@ -1,4 +1,3 @@
-// controllers/product.controller.js
 const Product = require('../models/product.model');
 
 // ✅ Tüm ürünleri getir
@@ -20,6 +19,9 @@ exports.createProduct = async (req, res) => {
     name,
     description,
     category,
+    price,
+    stock,
+    type,
     images,
     variants,
     tags
@@ -29,6 +31,9 @@ exports.createProduct = async (req, res) => {
     name,
     description,
     category,
+    price,
+    stock,
+    type, // ❗️ Buraya da eklenmeli
     images,
     variants,
     tags,
