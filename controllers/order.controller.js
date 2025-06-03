@@ -1,5 +1,5 @@
 // controllers/order.controller.js
-const Order = require("../models/order.model");
+const { Order } = require("../models/order.model");
 const Customer = require("../models/customer.model");
 const sendEmail = require("../utils/sendEmail"); // ✅ Mail gönderici yardımcı fonksiyon
 
