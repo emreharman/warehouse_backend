@@ -1,4 +1,3 @@
-// models/category.model.js
 const mongoose = require('mongoose');
 
 const categorySchema = new mongoose.Schema(
@@ -11,7 +10,11 @@ const categorySchema = new mongoose.Schema(
     },
     description: {
       type: String,
-    }
+    },
+    displayOrder: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
