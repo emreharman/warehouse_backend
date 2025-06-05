@@ -61,7 +61,8 @@ const orderSchema = new mongoose.Schema(
         'in_progress',   // üretim sürecinde
         'shipped',       // kargoya verildi
         'delivered',     // teslim edildi
-        'cancelled'      // iptal edildi
+        'cancelled',      // iptal edildi
+        'failed'          // başarısız oldu
       ],
       default: 'pre_payment'
     },

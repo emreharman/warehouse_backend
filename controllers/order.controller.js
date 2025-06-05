@@ -243,7 +243,7 @@ exports.shopierCallback = async (req, res) => {
 
     // Ödeme durumu başarılı ise
     if (!!callback) {
-      order.status = "paid"; // Ödeme başarılı
+      order.status = "pending"; // Ödeme başarılı
       await order.save();
 
       // Müşteriye ödeme onayı gönder
