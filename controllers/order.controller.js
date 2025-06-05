@@ -183,33 +183,33 @@ exports.createPaymentLink = async (req, res) => {
       process.env.SHOPIER_API_KEY,
       process.env.SHOPIER_API_SECRET
     );
-    
+
     // Siparişe özel verileri Shopier API'sine ekliyoruz
     shopier.setBuyer({
-      buyer_id_nr: customer.buyer_id_nr,
-      product_name: order.product_name,
-      buyer_name: customer.name,
-      buyer_surname: customer.surname,
-      buyer_email: customer.email,
-      buyer_phone: customer.phone,
+      buyer_id_nr: "010101",
+      product_name: "Test",
+      buyer_name: "Emre",
+      buyer_surname: "Harman",
+      buyer_email: "emrehrmn@gmail.com",
+      buyer_phone: "05555555555",
     });
 
     shopier.setOrderBilling({
-      billing_address: order.billing_address,
-      billing_city: order.billing_city,
-      billing_country: order.billing_country,
-      billing_postcode: order.billing_postcode,
+      billing_address: "Kennedy Caddesi No:2592",
+      billing_city: "Istanbul",
+      billing_country: "Türkiye",
+      billing_postcode: "34000",
     });
 
     shopier.setOrderShipping({
-      shipping_address: order.shipping_address,
-      shipping_city: order.shipping_city,
-      shipping_country: order.shipping_country,
-      shipping_postcode: order.shipping_postcode,
+      shipping_address: "Kennedy Caddesi No:2592",
+      shipping_city: "Istanbul",
+      shipping_country: "Türkiye",
+      shipping_postcode: "34000",
     });
 
     // Total fiyatı Shopier'e gönderiyoruz
-    const paymentPage = shopier.generatePaymentHTML(1); 
+    const paymentPage = shopier.generatePaymentHTML(1);
 
     // 5. Ödeme linkini frontend'e gönder
     res.status(201).json({
@@ -222,27 +222,29 @@ exports.createPaymentLink = async (req, res) => {
   }
 };
 
-
 exports.shopierCallback = async (req, res) => {
   console.log("Callback Request Headers:", req.headers);
   console.log("Callback Request Body:", req.body);
-  
+
   //const { platform_order_id, signature, status, random_nr } = req.body;
-  
+
   // Shopier API doğrulaması ve sipariş durumu kontrolü
-  const shopier = new Shopier(process.env.SHOPIER_API_KEY, process.env.SHOPIER_API_SECRET);
+  const shopier = new Shopier(
+    process.env.SHOPIER_API_KEY,
+    process.env.SHOPIER_API_SECRET
+  );
   const callback = shopier.callback(req?.body);
-  
+
   try {
     // Siparişi bul
-    const order = await Order.findOne({ platform_order_id: callback.order_id })
+    const order = await Order.findOne({ platform_order_id: callback.order_id });
     if (!order) return res.status(404).json({ message: "Sipariş bulunamadı" });
 
     // Ödeme durumu başarılı ise
     if (!!callback) {
       order.status = "paid"; // Ödeme başarılı
       await order.save();
-      
+
       // Müşteriye ödeme onayı gönder
       if (order?.customer?.email) {
         await sendEmail({
@@ -262,7 +264,7 @@ exports.shopierCallback = async (req, res) => {
             <p>Ödeme başarılı! Lütfen yönlendirilmek için bekleyin...</p>
           </body>
         </html>
-      `); 
+      `);
     } else {
       order.status = "failed"; // Ödeme başarısız
       await order.save();
@@ -275,10 +277,12 @@ exports.shopierCallback = async (req, res) => {
             <p>Ödeme başarısız. Lütfen tekrar deneyin.</p>
           </body>
         </html>
-      `); 
+      `);
     }
   } catch (error) {
     console.error("Shopier callback işlenirken hata oluştu:", error.message);
-    return res.status(500).json({ message: "Hata oluştu, lütfen tekrar deneyin" });
+    return res
+      .status(500)
+      .json({ message: "Hata oluştu, lütfen tekrar deneyin" });
   }
 };
