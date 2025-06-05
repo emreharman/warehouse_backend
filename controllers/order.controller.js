@@ -260,7 +260,7 @@ exports.shopierCallback = async (req, res) => {
         <html>
           <body>
             <script>
-              window.parent.postMessage({ status: 'success', orderId: '${order._id}' }, '*');
+              window.parent.parent.postMessage({ status: 'success', orderId: '${order._id}' }, '*');
             </script>
             <p>Ödeme başarılı! Lütfen yönlendirilmek için bekleyin...</p>
           </body>
@@ -273,7 +273,7 @@ exports.shopierCallback = async (req, res) => {
         <html>
           <body>
             <script>
-              window.parent.postMessage({ status: 'failed', orderId: '${order._id}' }, '*');
+              window.parent.parent.postMessage({ status: 'failed', orderId: '${order._id}' }, '*');
             </script>
             <p>Ödeme başarısız. Lütfen tekrar deneyin.</p>
           </body>
