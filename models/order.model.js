@@ -1,4 +1,3 @@
-// models/order.model.js
 const mongoose = require('mongoose');
 
 // Alt şema: Ürün varyantı bilgileri
@@ -67,6 +66,11 @@ const orderSchema = new mongoose.Schema(
       default: 'pre_payment'
     },
     totalPrice: Number,
+    platform_order_id: { 
+      type: String, 
+      required: true, // Siparişin platform_order_id'si zorunlu
+      unique: true    // Benzersiz olması sağlanır
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
