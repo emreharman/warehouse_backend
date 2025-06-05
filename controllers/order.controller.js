@@ -248,7 +248,7 @@ exports.shopierCallback = async (req, res) => {
       if (true) {
         await sendEmail({
           to: "emrehrmn@gmail.com",
-          subject: `Sipariş Ödeme Durumu – ${status}`,
+          subject: `Sipariş Ödeme Durumu – Ödeme Başarılı`,
           html: `<p>Siparişinizin ödemesi başarıyla alınmıştır. Sipariş No: #${order._id}</p>`,
         });
       }
