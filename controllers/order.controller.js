@@ -217,7 +217,8 @@ exports.createPaymentLink = async (req, res) => {
 };
 
 exports.shopierCallback = async (req, res) => {
-  console.log("callback req.body",req.body);
+  console.log("Callback Request Headers:", req.headers);
+  console.log("Callback Request Body:", req.body);
   
   //const { platform_order_id, signature, status, random_nr } = req.body;
   
