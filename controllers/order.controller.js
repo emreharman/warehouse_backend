@@ -4,6 +4,7 @@ const { Order } = require("../models/order.model");
 const Customer = require("../models/customer.model");
 const sendEmail = require("../utils/sendEmail"); // ✅ Mail gönderici yardımcı fonksiyon
 const crypto = require("crypto-js");
+const { Shopier } = require("shopier-api");
 
 // ✅ Sipariş oluştur (müşteriyle birlikte)
 exports.createOrderWithCustomer = async (req, res) => {
@@ -154,7 +155,6 @@ exports.deleteOrder = async (req, res) => {
 // Ödeme linkini oluşturmak için yeni endpoint
 exports.createPaymentLink = async (req, res) => {
   const { customer, order } = req.body;
-  console.log("emre customer", customer);
 
   try {
     // 1. Müşteri bul veya oluştur
@@ -177,12 +177,37 @@ exports.createPaymentLink = async (req, res) => {
     await existingCustomer.save();
 
     // 4. Ödeme linkini oluştur (Shopier API ile)
-    const paymentLink = await createShopierPaymentLink(newOrder);
+    const shopier = new Shopier(
+      process.env.SHOPIER_API_KEY,
+      process.env.SHOPIER_API_SECRET
+    );
+    shopier.setBuyer({
+      buyer_id_nr: "010101",
+      product_name: "Test",
+      buyer_name: "Emre",
+      buyer_surname: "Harman",
+      buyer_email: "mail@mail.com",
+      buyer_phone: "05555555555",
+    });
+    shopier.setOrderBilling({
+      billing_address: "Kennedy Caddesi No:2592",
+      billing_city: "Istanbul",
+      billing_country: "Türkiye",
+      billing_postcode: "34000",
+    });
+    shopier.setOrderShipping({
+      shipping_address: "Kennedy Caddesi No:2592",
+      shipping_city: "Istanbul",
+      shipping_country: "Türkiye",
+      shipping_postcode: "34000",
+    });
+    const paymentPage = shopier.generatePaymentHTML(15);
+    //const paymentLink = await createShopierPaymentLink(newOrder);
 
     // 5. Ödeme linkini frontend'e gönder
     res.status(201).json({
       order: newOrder,
-      paymentLink, // Ödeme linkini frontend'e ilet
+      paymentLink: paymentPage, // Ödeme linkini frontend'e ilet
     });
   } catch (error) {
     console.error("Ödeme linki oluşturulurken hata:", error.message);
@@ -206,18 +231,17 @@ async function createShopierPaymentLink(order) {
       currency: "TRY",
       signature: generateSignature(order), // İmzayı hesapla
     };
-  
+
     // Shopier ödeme linki oluşturma isteği
     const paymentLinkResponse = await axios.post(
       "https://www.shopier.com/ShowProduct/api_pay4.php",
       shopierData
     );
-  
+
     // Ödeme linkini döndür
     return paymentLinkResponse.data.payment_url;
   } catch (error) {
-    console.log("error",error);
-    console.log("error?.response",error?.response)?.data;
+    console.log("error?.response", error?.response)?.data;
   }
 }
 
