@@ -192,6 +192,7 @@ exports.createPaymentLink = async (req, res) => {
       buyer_surname: "Harman",
       buyer_email: "emrehrmn@gmail.com",
       buyer_phone: "05555555555",
+      platform_order_id: order.platform_order_id
     });
 
     shopier.setOrderBilling({
