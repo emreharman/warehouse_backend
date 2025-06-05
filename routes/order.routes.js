@@ -7,7 +7,8 @@ const {
   getOrder,
   updateOrderStatus,
   deleteOrder,
-  createPaymentLink, // Yeni eklenen endpoint
+  createPaymentLink,
+  shopierCallback
 } = require("../controllers/order.controller");
 
 const { protect } = require("../middlewares/auth.middleware");
@@ -18,9 +19,8 @@ router.post("/", createOrderWithCustomer);
 
 // Yeni endpoint: Ödeme linki oluştur (public)
 router.post("/create-payment-link", createPaymentLink); // Ödeme linki oluşturma
-
-// Ödeme callback'i: Shopier'den ödeme sonucu alındığında
-//router.post("/payment-callback", paymentCallback); // Ödeme callback işlemi
+// Geri dönüş URL'si: Shopier'den ödeme durumu bilgilerini almak için (callback)
+router.post("/shopier/callback", shopierCallback); // Shopier'den gelen callback
 
 // 🔐 Admin: Sipariş yönetimi
 router.get("/", protect, authorizeRoles("admin"), getOrders);

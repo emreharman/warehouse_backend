@@ -215,6 +215,48 @@ exports.createPaymentLink = async (req, res) => {
   }
 };
 
+exports.shopierCallback = async (req, res) => {
+  const { platform_order_id, signature, status, random_nr } = req.body;
+  const shopier = new Shopier(
+    process.env.SHOPIER_API_KEY,
+    process.env.SHOPIER_API_SECRET
+  );
+
+  const callback = shopier.callback(req.body, process.env.SHOPIER_API_SECRET);
+
+
+  try {
+    // Siparişi bul
+    const order = await Order.findById(platform_order_id);
+    if (!order) return res.status(404).json({ message: "Sipariş bulunamadı" });
+
+    // Ödeme durumu başarılı ise
+    if (status === "success") {
+      order.status = "paid"; // Ödeme başarılı
+      await order.save();
+      
+      // Müşteriye ödeme onayı gönder (isteğe bağlı)
+      if (order.customer?.email) {
+        await sendEmail({
+          to: order.customer.email,
+          subject: `Sipariş Ödeme Durumu – ${status}`,
+          html: `<p>Siparişinizin ödemesi başarıyla alınmıştır. Sipariş No: #${order._id}</p>`,
+        });
+      }
+
+      res.status(200).json({ message: "Ödeme başarılı" });
+    } else {
+      // Ödeme başarısız ise
+      order.status = "failed"; // Ödeme başarısız
+      await order.save();
+      res.status(400).json({ message: "Ödeme başarısız" });
+    }
+  } catch (error) {
+    console.error("Shopier callback işlenirken hata oluştu:", error.message);
+    res.status(500).json({ message: "Hata oluştu, lütfen tekrar deneyin" });
+  }
+};
+
 // Shopier ile ödeme linki oluşturulması için bir yardımcı fonksiyon
 async function createShopierPaymentLink(order) {
   try {
