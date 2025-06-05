@@ -216,8 +216,8 @@ async function createShopierPaymentLink(order) {
     // Ödeme linkini döndür
     return paymentLinkResponse.data.payment_url;
   } catch (error) {
-    console.log(error);
-    
+    console.log("error",error);
+    console.log("error?.response",error?.response);
   }
 }
 
