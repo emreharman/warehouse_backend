@@ -209,7 +209,7 @@ exports.createPaymentLink = async (req, res) => {
     });
 
     // Total fiyatı Shopier'e gönderiyoruz
-    const paymentPage = shopier.generatePaymentHTML(order.totalPrice); 
+    const paymentPage = shopier.generatePaymentHTML(1); 
 
     // 5. Ödeme linkini frontend'e gönder
     res.status(201).json({
