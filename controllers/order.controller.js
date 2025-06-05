@@ -3,7 +3,7 @@ const axios = require("axios");
 const { Order } = require("../models/order.model");
 const Customer = require("../models/customer.model");
 const sendEmail = require("../utils/sendEmail"); // ✅ Mail gönderici yardımcı fonksiyon
-const crypto = require('crypto-js'); 
+const crypto = require("crypto-js");
 
 // ✅ Sipariş oluştur (müşteriyle birlikte)
 exports.createOrderWithCustomer = async (req, res) => {
@@ -154,8 +154,7 @@ exports.deleteOrder = async (req, res) => {
 // Ödeme linkini oluşturmak için yeni endpoint
 exports.createPaymentLink = async (req, res) => {
   const { customer, order } = req.body;
-  console.log("emre customer",customer);
-  
+  console.log("emre customer", customer);
 
   try {
     // 1. Müşteri bul veya oluştur
@@ -220,8 +219,14 @@ async function createShopierPaymentLink(order) {
 // İmzayı hesaplama fonksiyonu
 function generateSignature(order) {
   const data = order._id + order.totalPrice + process.env.SHOPIER_API_KEY;
-  const signature = crypto
-    .HmacSHA256(data, process.env.SHOPIER_API_SECRET)
-    .toString(crypto.enc.Base64);
-  return signature;
+
+  const signature = crypto.HmacSHA256(data, process.env.SHOPIER_API_SECRET);
+
+  console.log("Raw Signature (WordArray):", signature);
+
+  const base64Signature = signature.toString(crypto.enc.Base64);
+
+  console.log("Base64 Signature:", base64Signature);
+
+  return base64Signature;
 }
