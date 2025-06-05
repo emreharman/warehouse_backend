@@ -192,28 +192,33 @@ exports.createPaymentLink = async (req, res) => {
 
 // Shopier ile ödeme linki oluşturulması için bir yardımcı fonksiyon
 async function createShopierPaymentLink(order) {
-  const shopierData = {
-    API_key: process.env.SHOPIER_API_KEY, // .env dosyasından alıyoruz
-    website_index: 1, // Web sitesi indexi
-    platform_order_id: order._id,
-    product_name: "Test", // Siparişin adı
-    buyer_name: order.customer.firstName,
-    buyer_surname: order.customer.lastName,
-    buyer_email: order.customer.email,
-    buyer_phone: order.customer.phone,
-    total_order_value: order.totalPrice,
-    currency: "TRY",
-    signature: generateSignature(order), // İmzayı hesapla
-  };
-
-  // Shopier ödeme linki oluşturma isteği
-  const paymentLinkResponse = await axios.post(
-    "https://www.shopier.com/ShowProduct/api_pay4.php",
-    shopierData
-  );
-
-  // Ödeme linkini döndür
-  return paymentLinkResponse.data.payment_url;
+  try {
+    const shopierData = {
+      API_key: process.env.SHOPIER_API_KEY, // .env dosyasından alıyoruz
+      website_index: 1, // Web sitesi indexi
+      platform_order_id: order._id,
+      product_name: "Test", // Siparişin adı
+      buyer_name: order.customer.firstName,
+      buyer_surname: order.customer.lastName,
+      buyer_email: order.customer.email,
+      buyer_phone: order.customer.phone,
+      total_order_value: order.totalPrice,
+      currency: "TRY",
+      signature: generateSignature(order), // İmzayı hesapla
+    };
+  
+    // Shopier ödeme linki oluşturma isteği
+    const paymentLinkResponse = await axios.post(
+      "https://www.shopier.com/ShowProduct/api_pay4.php",
+      shopierData
+    );
+  
+    // Ödeme linkini döndür
+    return paymentLinkResponse.data.payment_url;
+  } catch (error) {
+    console.log(error);
+    
+  }
 }
 
 // İmzayı hesaplama fonksiyonu
