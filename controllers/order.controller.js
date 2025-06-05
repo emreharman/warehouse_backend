@@ -217,15 +217,17 @@ exports.createPaymentLink = async (req, res) => {
 };
 
 exports.shopierCallback = async (req, res) => {
-  const { platform_order_id, signature, status, random_nr } = req.body;
+  console.log("callback req.body",req.body);
+  
+  //const { platform_order_id, signature, status, random_nr } = req.body;
   
   // Shopier API doğrulaması ve sipariş durumu kontrolü
   const shopier = new Shopier(process.env.SHOPIER_API_KEY, process.env.SHOPIER_API_SECRET);
-  const callback = shopier.callback(req.body);
+  const callback = shopier.callback(req?.body);
   
   try {
     // Siparişi bul
-    const order = await Order.findById(platform_order_id);
+    const order = await Order.findById(callback?.order_id);
     if (!order) return res.status(404).json({ message: "Sipariş bulunamadı" });
 
     // Ödeme durumu başarılı ise
@@ -234,7 +236,7 @@ exports.shopierCallback = async (req, res) => {
       await order.save();
       
       // Müşteriye ödeme onayı gönder
-      if (order.customer?.email) {
+      if (order?.customer?.email) {
         await sendEmail({
           to: "emrehrmn@gmail.com",
           subject: `Sipariş Ödeme Durumu – ${status}`,
