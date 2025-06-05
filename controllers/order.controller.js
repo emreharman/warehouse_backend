@@ -217,7 +217,7 @@ async function createShopierPaymentLink(order) {
     return paymentLinkResponse.data.payment_url;
   } catch (error) {
     console.log("error",error);
-    console.log("error?.response",error?.response);
+    console.log("error?.response",error?.response)?.data;
   }
 }
 
