@@ -201,7 +201,8 @@ exports.createPaymentLink = async (req, res) => {
       shipping_country: "Türkiye",
       shipping_postcode: "34000",
     });
-    const paymentPage = shopier.generatePaymentHTML(15);
+    // burada totalprice gidecek
+    const paymentPage = shopier.generatePaymentHTML(1);
     //const paymentLink = await createShopierPaymentLink(newOrder);
 
     // 5. Ödeme linkini frontend'e gönder
