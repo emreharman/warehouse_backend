@@ -289,13 +289,8 @@ exports.shopierCallback = async (req, res) => {
           </head>
           <body>
             <h1>Ödeme Başarılı!</h1>
-            <p>Siparişiniz başarıyla işleme alındı. Lütfen yönlendirilmek için bekleyin...</p>
-            <a href="https://modtee.com.tr" class="btn">Anasayfaya Git</a>
-            <script>
-              setTimeout(() => {
-                window.location.href = 'https://modtee.com.tr';
-              }, 5000); // 5 saniye sonra anasayfaya yönlendirilir
-            </script>
+            <p>Bizi tercih ettiğiniz için teşekkür ederiz.</p>
+            <p>Siparişiniz başarıyla işleme alındı. Pop up'ı kapatarak alışverişinize devam edebilirsiniz.</p>
           </body>
         </html>
       `);
@@ -338,12 +333,6 @@ exports.shopierCallback = async (req, res) => {
           <body>
             <h1>Ödeme Başarısız</h1>
             <p>Ödeme başarısız oldu. Lütfen tekrar deneyin.</p>
-            <a href="https://modtee.com.tr" class="btn">Anasayfaya Git</a>
-            <script>
-              setTimeout(() => {
-                window.location.href = 'https://modtee.com.tr';
-              }, 5000); // 5 saniye sonra anasayfaya yönlendirilir
-            </script>
           </body>
         </html>
       `);
