@@ -42,7 +42,7 @@ exports.addToCart = async (req, res) => {
 
   try {
     let cart = await Cart.findOne({ customer: req.customer._id });
-    const itemTotal = item.selectedVariant?.price * item.quantity || 0;
+    const itemTotal = item?.price * item.quantity || 0;
 
     if (!cart) {
       // Yeni sepet oluştur

@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { orderItemSchema } = require("./order.model"); // burası önemli
 
 const cartSchema = new mongoose.Schema(
   {
@@ -7,11 +6,25 @@ const cartSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Customer",
       required: true,
-      unique: true
+      unique: true,
     },
-    items: [orderItemSchema], // burada tekrar tanımlamıyoruz
-    note: String,
-    totalPrice: Number
+    items: [
+      {
+        id: { type: String, required: true }, // Özel tasarım ID'si, örneğin: custom-123456789
+        name: { type: String, required: true }, // Ürün ismi
+        image: { type: String, required: true }, // Ürün görseli URL'si
+        price: { type: Number, required: true }, // Ürün fiyatı
+        quantity: { type: Number, required: true }, // Ürün adedi
+        selectedVariant: {
+          type: Map,
+          of: String,
+          required: false,
+          default: {},
+        }, // Varyant bilgileri (örneğin renk, beden)
+      },
+    ], // Burada her bir öğe objedir
+    note: String, // Sepet notu (isteğe bağlı)
+    totalPrice: Number, // Toplam sepet fiyatı
   },
   { timestamps: true }
 );
