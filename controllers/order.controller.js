@@ -218,18 +218,11 @@ exports.createPaymentLink = async (req, res) => {
 
 exports.shopierCallback = async (req, res) => {
   const { platform_order_id, signature, status, random_nr } = req.body;
-  console.log("callback req.body",req.body);
   
-  const shopier = new Shopier(
-    process.env.SHOPIER_API_KEY,
-    process.env.SHOPIER_API_SECRET
-  );
-
-  const callback = shopier.callback(req.body, process.env.SHOPIER_API_SECRET);
-  console.log("callback callback",callback);
+  // Shopier API doğrulaması ve sipariş durumu kontrolü
+  const shopier = new Shopier(process.env.SHOPIER_API_KEY, process.env.SHOPIER_API_SECRET);
+  const callback = shopier.callback(req.body);
   
-
-
   try {
     // Siparişi bul
     const order = await Order.findById(platform_order_id);
@@ -240,7 +233,7 @@ exports.shopierCallback = async (req, res) => {
       order.status = "paid"; // Ödeme başarılı
       await order.save();
       
-      // Müşteriye ödeme onayı gönder (isteğe bağlı)
+      // Müşteriye ödeme onayı gönder
       if (order.customer?.email) {
         await sendEmail({
           to: "emrehrmn@gmail.com",
@@ -249,18 +242,37 @@ exports.shopierCallback = async (req, res) => {
         });
       }
 
-      res.status(200).json({ message: "Ödeme başarılı" });
+      // Ödeme başarılı olduğunda iframe içinde gösterilecek JavaScript kodu
+      return res.status(200).send(`
+        <html>
+          <body>
+            <script>
+              window.parent.postMessage({ status: 'success', orderId: '${order._id}' }, '*');
+            </script>
+            <p>Ödeme başarılı! Lütfen yönlendirilmek için bekleyin...</p>
+          </body>
+        </html>
+      `); 
     } else {
-      // Ödeme başarısız ise
       order.status = "failed"; // Ödeme başarısız
       await order.save();
-      res.status(400).json({ message: "Ödeme başarısız" });
+      return res.status(400).send(`
+        <html>
+          <body>
+            <script>
+              window.parent.postMessage({ status: 'failed', orderId: '${order._id}' }, '*');
+            </script>
+            <p>Ödeme başarısız. Lütfen tekrar deneyin.</p>
+          </body>
+        </html>
+      `); 
     }
   } catch (error) {
     console.error("Shopier callback işlenirken hata oluştu:", error.message);
-    res.status(500).json({ message: "Hata oluştu, lütfen tekrar deneyin" });
+    return res.status(500).json({ message: "Hata oluştu, lütfen tekrar deneyin" });
   }
 };
+
 
 // Shopier ile ödeme linki oluşturulması için bir yardımcı fonksiyon
 async function createShopierPaymentLink(order) {
