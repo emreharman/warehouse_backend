@@ -227,8 +227,6 @@ exports.shopierCallback = async (req, res) => {
   console.log("Callback Request Headers:", req.headers);
   console.log("Callback Request Body:", req.body);
 
-  //const { platform_order_id, signature, status, random_nr } = req.body;
-
   // Shopier API doğrulaması ve sipariş durumu kontrolü
   const shopier = new Shopier(
     process.env.SHOPIER_API_KEY,
@@ -247,7 +245,7 @@ exports.shopierCallback = async (req, res) => {
       await order.save();
 
       // Müşteriye ödeme onayı gönder
-      if (order?.customer?.email) {
+      if (true) {
         await sendEmail({
           to: "emrehrmn@gmail.com",
           subject: `Sipariş Ödeme Durumu – ${status}`,
@@ -258,11 +256,46 @@ exports.shopierCallback = async (req, res) => {
       // Ödeme başarılı olduğunda iframe içinde gösterilecek JavaScript kodu
       return res.status(200).send(`
         <html>
+          <head>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                text-align: center;
+                padding: 50px;
+                background-color: #f9f9f9;
+                color: #333;
+              }
+              h1 {
+                color: green;
+                font-size: 36px;
+                margin-bottom: 20px;
+              }
+              p {
+                font-size: 18px;
+                margin-bottom: 30px;
+              }
+              .btn {
+                background-color: #007bff;
+                color: white;
+                font-size: 16px;
+                padding: 10px 20px;
+                border-radius: 5px;
+                text-decoration: none;
+              }
+              .btn:hover {
+                background-color: #0056b3;
+              }
+            </style>
+          </head>
           <body>
+            <h1>Ödeme Başarılı!</h1>
+            <p>Siparişiniz başarıyla işleme alındı. Lütfen yönlendirilmek için bekleyin...</p>
+            <a href="https://modtee.com.tr" class="btn">Anasayfaya Git</a>
             <script>
-              window.parent.parent.postMessage({ status: 'success', orderId: '${order._id}' }, '*');
+              setTimeout(() => {
+                window.location.href = 'https://modtee.com.tr';
+              }, 5000); // 5 saniye sonra anasayfaya yönlendirilir
             </script>
-            <p>Ödeme başarılı! Lütfen yönlendirilmek için bekleyin...</p>
           </body>
         </html>
       `);
@@ -271,11 +304,46 @@ exports.shopierCallback = async (req, res) => {
       await order.save();
       return res.status(400).send(`
         <html>
+          <head>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                text-align: center;
+                padding: 50px;
+                background-color: #f9f9f9;
+                color: #333;
+              }
+              h1 {
+                color: red;
+                font-size: 36px;
+                margin-bottom: 20px;
+              }
+              p {
+                font-size: 18px;
+                margin-bottom: 30px;
+              }
+              .btn {
+                background-color: #007bff;
+                color: white;
+                font-size: 16px;
+                padding: 10px 20px;
+                border-radius: 5px;
+                text-decoration: none;
+              }
+              .btn:hover {
+                background-color: #0056b3;
+              }
+            </style>
+          </head>
           <body>
+            <h1>Ödeme Başarısız</h1>
+            <p>Ödeme başarısız oldu. Lütfen tekrar deneyin.</p>
+            <a href="https://modtee.com.tr" class="btn">Anasayfaya Git</a>
             <script>
-              window.parent.parent.postMessage({ status: 'failed', orderId: '${order._id}' }, '*');
+              setTimeout(() => {
+                window.location.href = 'https://modtee.com.tr';
+              }, 5000); // 5 saniye sonra anasayfaya yönlendirilir
             </script>
-            <p>Ödeme başarısız. Lütfen tekrar deneyin.</p>
           </body>
         </html>
       `);
@@ -287,3 +355,4 @@ exports.shopierCallback = async (req, res) => {
       .json({ message: "Hata oluştu, lütfen tekrar deneyin" });
   }
 };
+
