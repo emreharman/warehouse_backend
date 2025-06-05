@@ -218,12 +218,16 @@ exports.createPaymentLink = async (req, res) => {
 
 exports.shopierCallback = async (req, res) => {
   const { platform_order_id, signature, status, random_nr } = req.body;
+  console.log("callback req.body",req.body);
+  
   const shopier = new Shopier(
     process.env.SHOPIER_API_KEY,
     process.env.SHOPIER_API_SECRET
   );
 
   const callback = shopier.callback(req.body, process.env.SHOPIER_API_SECRET);
+  console.log("callback callback",callback);
+  
 
 
   try {
@@ -239,7 +243,7 @@ exports.shopierCallback = async (req, res) => {
       // Müşteriye ödeme onayı gönder (isteğe bağlı)
       if (order.customer?.email) {
         await sendEmail({
-          to: order.customer.email,
+          to: "emrehrmn@gmail.com",
           subject: `Sipariş Ödeme Durumu – ${status}`,
           html: `<p>Siparişinizin ödemesi başarıyla alınmıştır. Sipariş No: #${order._id}</p>`,
         });

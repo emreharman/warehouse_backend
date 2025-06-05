@@ -20,7 +20,7 @@ router.post("/", createOrderWithCustomer);
 // Yeni endpoint: Ödeme linki oluştur (public)
 router.post("/create-payment-link", createPaymentLink); // Ödeme linki oluşturma
 // Geri dönüş URL'si: Shopier'den ödeme durumu bilgilerini almak için (callback)
-router.post("/shopier/callback", shopierCallback); // Shopier'den gelen callback
+router.post("/shopier-callback", shopierCallback); // Shopier'den gelen callback
 
 // 🔐 Admin: Sipariş yönetimi
 router.get("/", protect, authorizeRoles("admin"), getOrders);
