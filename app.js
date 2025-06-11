@@ -15,7 +15,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['https://www.modtee.com.tr','http://localhost:3000','http://localhost:5173','*','https://backoffice.modtee.com.tr/'], // izin verilen domainleri belirtin
+  origin: ['https://www.modtee.com.tr','http://localhost:3000','http://localhost:5173','https://backoffice.modtee.com.tr'], // izin verilen domainleri belirtin
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // izin verilen metodlar
   allowedHeaders: ['Content-Type', 'Authorization'], // izin verilen headerlar
 }));
