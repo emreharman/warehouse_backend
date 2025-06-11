@@ -3,8 +3,6 @@ const { Product } = require("../models/product.model");
 
 // Sepete ürün eklemek için controller
 exports.addToCart = async (req, res) => {
-  //const { customerId, productId, quantity, variant, note } = req.body;
-  console.log(req.body);
   const { item } = req.body;
 
   try {
@@ -18,35 +16,6 @@ exports.addToCart = async (req, res) => {
         totalPrice: 0,
       });
     }
-
-    // 2. Ürünü bul
-    /* const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: 'Ürün bulunamadı' });
-    } */
-
-    // 3. Sepete ürün ekle (varsa miktarını güncelle)
-    /* const itemIndex = cart.items.findIndex(
-      (item) => item.id === productId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant)
-    ); */
-
-    /* if (itemIndex >= 0) {
-      // Eğer ürün varsa, miktarını güncelle
-      cart.items[itemIndex].quantity += quantity;
-    } else {
-      // Yeni ürün ekle
-      const newItem = {
-        product: productId,
-        productType: product.type, // Örneğin tişört, hoodie vb.
-        selectedVariant: variant,
-        quantity: quantity,
-        designFiles: [],
-        designMeta: {},
-        note: note || "",
-      };
-      cart.items.push(newItem);
-    } */
-    console.log("newItem",item);
     
     cart.items.push(item);
     // 4. Toplam fiyatı güncelle
@@ -67,11 +36,8 @@ exports.addToCart = async (req, res) => {
 
 // Sepetten ürün silmek için controller
 exports.removeFromCart = async (req, res) => {
-  const {item } = req.body;
+  const item = req.body;
   const customer=req.customer
-  console.log(req.body);
-  
-
   try {
     // 1. Sepeti bul
     let cart = await Cart.findOne({ customer: customer?._id });
@@ -80,7 +46,8 @@ exports.removeFromCart = async (req, res) => {
     }
 
     // 2. Ürünü sepetteki ürünler arasından sil
-    const itemIndex = cart.items.findIndex((item) => item.id === item.id);
+    
+    const itemIndex = cart.items.findIndex((i) => i.id === item.id);
 
     if (itemIndex < 0) {
       return res.status(404).json({ message: "Sepette bu ürün bulunmuyor" });
