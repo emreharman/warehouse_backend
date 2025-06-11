@@ -155,7 +155,7 @@ exports.deleteOrder = async (req, res) => {
 // Ödeme linkini oluşturmak için yeni endpoint
 // controllers/order.controller.js
 exports.createPaymentLink = async (req, res) => {
-  const { customer, order } = req.body;
+  const { customer, order, address } = req.body;
 
   try {
     // 1. Müşteri bul veya oluştur
@@ -186,31 +186,31 @@ exports.createPaymentLink = async (req, res) => {
 
     // Siparişe özel verileri Shopier API'sine ekliyoruz
     shopier.setBuyer({
-      buyer_id_nr: "010101",
-      product_name: "Test",
-      buyer_name: "Emre",
-      buyer_surname: "Harman",
-      buyer_email: "emrehrmn@gmail.com",
-      buyer_phone: "05555555555",
-      platform_order_id: order.platform_order_id
+      buyer_id_nr: existingCustomer?._id,
+      product_name: "Özel Tasarım Ürün",
+      buyer_name: existingCustomer?.name?.split(" ")?.[0],
+      buyer_surname: existingCustomer?.name?.split(" ")?.[1],
+      buyer_email: existingCustomer?.email,
+      buyer_phone: existingCustomer?.phone,
+      platform_order_id: order.platform_order_id,
     });
 
     shopier.setOrderBilling({
-      billing_address: "Kennedy Caddesi No:2592",
-      billing_city: "Istanbul",
-      billing_country: "Türkiye",
-      billing_postcode: "34000",
+      billing_address: address?.line1,
+      billing_city: address?.city,
+      billing_country: address?.country,
+      billing_postcode: address?.postalCode,
     });
 
     shopier.setOrderShipping({
-      shipping_address: "Kennedy Caddesi No:2592",
-      shipping_city: "Istanbul",
-      shipping_country: "Türkiye",
-      shipping_postcode: "34000",
+      shipping_address: address?.line1,
+      shipping_city: address?.city,
+      shipping_country: address?.country,
+      shipping_postcode: address?.postalCode,
     });
 
     // Total fiyatı Shopier'e gönderiyoruz
-    const paymentPage = shopier.generatePaymentHTML(1);
+    const paymentPage = shopier.generatePaymentHTML(order?.totalPrice);
 
     // 5. Ödeme linkini frontend'e gönder
     res.status(201).json({
@@ -344,4 +344,3 @@ exports.shopierCallback = async (req, res) => {
       .json({ message: "Hata oluştu, lütfen tekrar deneyin" });
   }
 };
-

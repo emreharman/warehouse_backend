@@ -1,88 +1,121 @@
-const Cart = require('../models/cart.model');
+const Cart = require("../models/cart.model");
+const { Product } = require("../models/product.model");
 
-// 🛒 GET /api/cart – Sepeti getir
-// Kullanım: GET /api/cart (Authorization: Bearer <token>)
-exports.getCart = async (req, res) => {
-  try {
-    const cart = await Cart.findOne({ customer: req.customer._id });
-    if (!cart) return res.status(200).json({ items: [], totalPrice: 0 });
-    res.json(cart);
-  } catch (error) {
-    res.status(500).json({ message: 'Sepet alınamadı' });
-  }
-};
-
-// ➕ POST /api/cart – Sepete ürün ekle
-// Kullanım: POST /api/cart (Authorization: Bearer <token>)
-// req.body örneği:
-// {
-//   "item": {
-//     "productType": "t",
-//     "selectedVariant": {
-//       "color": "siyah",
-//       "size": "M",
-//       "quality": "premium",
-//       "fit": "regular",
-//       "price": 249
-//     },
-//     "quantity": 2,
-//     "designFiles": ["https://cdn.supabase.io/..."],
-//     "designMeta": {
-//       "side": "front",
-//       "size": "medium",
-//       "position": "center",
-//       "pixelPosition": { "x": 100, "y": 80 },
-//       "fileName": "design.png",
-//       "finalDesign": "https://cdn.supabase.io/..."
-//     }
-//   }
-// }
+// Sepete ürün eklemek için controller
 exports.addToCart = async (req, res) => {
+  //const { customerId, productId, quantity, variant, note } = req.body;
+  console.log(req.body);
   const { item } = req.body;
 
   try {
-    let cart = await Cart.findOne({ customer: req.customer._id });
-    const itemTotal = item?.price * item.quantity || 0;
+    // 1. Sepeti bul (eğer yoksa yeni sepet oluştur)
+    let cart = await Cart.findOne({ customer: req?.customer?._id });
 
     if (!cart) {
-      // Yeni sepet oluştur
-      cart = await Cart.create({
-        customer: req.customer._id,
-        items: [item],
-        totalPrice: itemTotal
+      cart = new Cart({
+        customer: req?.customer?._id,
+        items: [],
+        totalPrice: 0,
       });
-    } else {
-      // Var olan sepete ekle
-      cart.items.push(item);
-      cart.totalPrice += itemTotal;
-      await cart.save();
     }
 
-    res.status(201).json(cart);
-  } catch (error) {
-    res.status(500).json({ message: 'Ürün sepete eklenemedi' });
+    // 2. Ürünü bul
+    /* const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Ürün bulunamadı' });
+    } */
+
+    // 3. Sepete ürün ekle (varsa miktarını güncelle)
+    /* const itemIndex = cart.items.findIndex(
+      (item) => item.id === productId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant)
+    ); */
+
+    /* if (itemIndex >= 0) {
+      // Eğer ürün varsa, miktarını güncelle
+      cart.items[itemIndex].quantity += quantity;
+    } else {
+      // Yeni ürün ekle
+      const newItem = {
+        product: productId,
+        productType: product.type, // Örneğin tişört, hoodie vb.
+        selectedVariant: variant,
+        quantity: quantity,
+        designFiles: [],
+        designMeta: {},
+        note: note || "",
+      };
+      cart.items.push(newItem);
+    } */
+    console.log("newItem",item);
+    
+    cart.items.push(item);
+    // 4. Toplam fiyatı güncelle
+    cart.totalPrice = cart.items.reduce((total, item) => {
+      const itemPrice = item.price || 0; // Ürün fiyatını al
+      return total + itemPrice * item.quantity;
+    }, 0);
+
+    // 5. Sepeti kaydet
+    await cart.save();
+
+    res.status(200).json(cart);
+  } catch (err) {
+    console.error("Sepet güncellenirken hata oluştu:", err);
+    res.status(500).json({ message: "Sepet güncellenirken bir hata oluştu" });
   }
 };
 
-// ❌ DELETE /api/cart/:itemId – Sepetten ürün kaldır (index'e göre)
-// Kullanım: DELETE /api/cart/0 (Authorization: Bearer <token>)
+// Sepetten ürün silmek için controller
 exports.removeFromCart = async (req, res) => {
-  const { itemId } = req.params;
+  const {item } = req.body;
+  const customer=req.customer
+  console.log(req.body);
+  
 
   try {
-    const cart = await Cart.findOne({ customer: req.customer._id });
-    if (!cart) return res.status(404).json({ message: 'Sepet bulunamadı' });
+    // 1. Sepeti bul
+    let cart = await Cart.findOne({ customer: customer?._id });
+    if (!cart) {
+      return res.status(404).json({ message: "Sepet bulunamadı" });
+    }
 
-    cart.items.splice(itemId, 1);
-    cart.totalPrice = cart.items.reduce(
-      (sum, item) => sum + (item.selectedVariant?.price || 0) * item.quantity,
-      0
-    );
+    // 2. Ürünü sepetteki ürünler arasından sil
+    const itemIndex = cart.items.findIndex((item) => item.id === item.id);
 
+    if (itemIndex < 0) {
+      return res.status(404).json({ message: "Sepette bu ürün bulunmuyor" });
+    }
+
+    cart.items.splice(itemIndex, 1);
+
+    // 4. Sepeti kaydet
     await cart.save();
-    res.json(cart);
-  } catch (error) {
-    res.status(500).json({ message: 'Sepet güncellenemedi' });
+
+    res.status(200).json(cart);
+  } catch (err) {
+    console.error("Sepetten ürün silinirken hata oluştu:", err);
+    res
+      .status(500)
+      .json({ message: "Sepetten ürün silinirken bir hata oluştu" });
+  }
+};
+
+// Sepeti getir (customer'a ait)
+exports.getCart = async (req, res) => {
+
+
+  try {
+    // 1. Sepeti bul
+    const cart = await Cart.findOne({ customer: req?.customer?._id });
+    
+    if (!cart) {
+      return res.status(404).json({ message: "Sepet bulunamadı" });
+    }
+
+    res.status(200).json(cart);
+  } catch (err) {
+    console.error("Sepet getirilirken hata oluştu:", err);
+    res.status(500).json({ message: "Sepet getirilirken bir hata oluştu" });
   }
 };
 
@@ -91,14 +124,14 @@ exports.removeFromCart = async (req, res) => {
 exports.clearCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({ customer: req.customer._id });
-    if (!cart) return res.status(404).json({ message: 'Sepet bulunamadı' });
+    if (!cart) return res.status(404).json({ message: "Sepet bulunamadı" });
 
     cart.items = [];
     cart.totalPrice = 0;
     await cart.save();
 
-    res.json({ message: 'Sepet temizlendi' });
+    res.json({ message: "Sepet temizlendi" });
   } catch (error) {
-    res.status(500).json({ message: 'Sepet temizlenemedi' });
+    res.status(500).json({ message: "Sepet temizlenemedi" });
   }
 };
