@@ -14,7 +14,11 @@ const cartRoutes = require("./routes/cart.routes");
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['*'], // izin verilen domainleri belirtin
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // izin verilen metodlar
+  allowedHeaders: ['Content-Type', 'Authorization'], // izin verilen headerlar
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
