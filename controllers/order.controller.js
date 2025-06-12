@@ -346,3 +346,48 @@ exports.shopierCallback = async (req, res) => {
       .json({ message: "Hata oluştu, lütfen tekrar deneyin" });
   }
 };
+
+// ✅ Müşterinin tüm siparişlerini al
+exports.getCustomerOrders = async (req, res) => {
+  try {
+    const customerId = req.customer._id;  // Middleware'den gelen müşteri bilgisi
+
+    // Müşteriye ait tüm siparişleri getir
+    const orders = await Order.find({ customer: customerId })
+      .populate("customer")
+      .populate("items.product");
+
+    if (orders.length === 0) {
+      return res.status(404).json({ message: "Sipariş bulunamadı." });
+    }
+
+    res.json(orders);
+  } catch (error) {
+    console.error("Siparişler alınırken hata oluştu:", error.message);
+    res.status(500).json({ message: "Siparişler alınamadı" });
+  }
+};
+
+// ✅ Müşterinin belirli bir siparişini al
+exports.getCustomerOrder = async (req, res) => {
+  const { id } = req.params;  // Siparişin ID'si
+
+  try {
+    const customerId = req.customer._id;  // Middleware'den gelen müşteri bilgisi
+
+    // Siparişi müşteriyle ilişkilendirerek buluyoruz
+    const order = await Order.findOne({ _id: id, customer: customerId })
+      .populate("customer")
+      .populate("items.product");
+
+    if (!order) {
+      return res.status(404).json({ message: "Sipariş bulunamadı." });
+    }
+
+    res.json(order);
+  } catch (error) {
+    console.error("Sipariş bulunurken hata oluştu:", error.message);
+    res.status(500).json({ message: "Sipariş bulunamadı" });
+  }
+};
+

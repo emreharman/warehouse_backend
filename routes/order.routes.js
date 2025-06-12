@@ -8,14 +8,21 @@ const {
   updateOrderStatus,
   deleteOrder,
   createPaymentLink,
-  shopierCallback
+  shopierCallback,
+  getCustomerOrders,
+  getCustomerOrder
 } = require("../controllers/order.controller");
 
 const { protect } = require("../middlewares/auth.middleware");
+const { protectCustomer } = require('../middlewares/auth.middleware');
 const { authorizeRoles } = require("../middlewares/role.middleware");
 
 // 🔓 Public: Müşteri sipariş oluşturur (formdan)
 router.post("/", createOrderWithCustomer);
+
+// 🔐 Customer: Müşteri sadece kendi siparişlerine erişebilir
+router.get("/my-orders", protectCustomer, getCustomerOrders); // Müşteri sadece kendi siparişlerini görebilir
+router.get("/my-orders/:id", protectCustomer, getCustomerOrder); // Müşteri sadece kendi siparişini görebilir
 
 // Yeni endpoint: Ödeme linki oluştur (public)
 router.post("/create-payment-link", createPaymentLink); // Ödeme linki oluşturma
