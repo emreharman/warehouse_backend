@@ -51,7 +51,7 @@ const orderSchema = new mongoose.Schema(
       enum: ['custom', 'standard'],
       default: 'custom'
     },
-    items: [orderItemSchema],
+    items: [],
     note: { type: String },
     status: {
       type: String,
@@ -67,6 +67,7 @@ const orderSchema = new mongoose.Schema(
       default: 'pre_payment'
     },
     totalPrice: Number,
+    address: Object,
     platform_order_id: { 
       type: String, 
       required: true, // Siparişin platform_order_id'si zorunlu
