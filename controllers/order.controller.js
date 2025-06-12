@@ -171,6 +171,8 @@ exports.createPaymentLink = async (req, res) => {
       customer: existingCustomer._id,
       status: order.status || "pre_payment", // Siparişin durumu
       platform_order_id: order.platform_order_id, // Siparişe platform_order_id'yi ekliyoruz
+      totalPrice: order.totalPrice,
+      address: address
     });
 
     // 3. Siparişi müşteriye kaydet
