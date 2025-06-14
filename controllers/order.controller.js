@@ -238,7 +238,7 @@ exports.shopierCallback = async (req, res) => {
 
   try {
     // Siparişi bul
-    const order = await Order.findOne({ platform_order_id: callback.order_id });
+    const order = await Order.findOne({ platform_order_id: callback.order_id }).populate("customer");
     if (!order) return res.status(404).json({ message: "Sipariş bulunamadı" });
     console.log("order", order);
 
