@@ -212,8 +212,8 @@ exports.createPaymentLink = async (req, res) => {
     });
 
     // Total fiyatı Shopier'e gönderiyoruz
-    const paymentPage = shopier.generatePaymentHTML(order?.totalPrice);
-    //const paymentPage = shopier.generatePaymentHTML(1);
+    //const paymentPage = shopier.generatePaymentHTML(order?.totalPrice);
+    const paymentPage = shopier.generatePaymentHTML(1);
 
     // 5. Ödeme linkini frontend'e gönder
     res.status(201).json({
@@ -227,7 +227,6 @@ exports.createPaymentLink = async (req, res) => {
 };
 
 exports.shopierCallback = async (req, res) => {
-  console.log("Callback Request Headers:", req.headers);
   console.log("Callback Request Body:", req.body);
 
   // Shopier API doğrulaması ve sipariş durumu kontrolü
@@ -241,6 +240,7 @@ exports.shopierCallback = async (req, res) => {
     // Siparişi bul
     const order = await Order.findOne({ platform_order_id: callback.order_id });
     if (!order) return res.status(404).json({ message: "Sipariş bulunamadı" });
+    console.log("order", order);
 
     // Ödeme durumu başarılı ise
     if (!!callback) {
@@ -248,33 +248,33 @@ exports.shopierCallback = async (req, res) => {
       await order.save();
 
       // Müşteriye ödeme onayı gönder
-      if (true) {
+      await sendEmail({
+        to: order?.customer?.email,
+        subject: `Sipariş Ödeme Durumu – Ödeme Başarılı`,
+        html: `<p>Siparişinizin ödemesi başarıyla alınmıştır 🎉. Sipariş No: #${order._id}</p>`,
+      });
+      const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
+      for (const adminEmail of adminEmails) {
         await sendEmail({
-          to: order?.customer?.email,
-          subject: `Sipariş Ödeme Durumu – Ödeme Başarılı`,
-          html: `<p>Siparişinizin ödemesi başarıyla alınmıştır 🎉. Sipariş No: #${order._id}</p>`,
+          to: adminEmail,
+          subject: `Yeni Sipariş Oluştu – #${order._id}`,
+          html: `
+       <div style="font-family: Arial, sans-serif; color: #333;">
+         <h2>Yeni Sipariş 🎯</h2>
+         <p><strong>Müşteri:</strong> ${order?.customer?.name}</p>
+         <p><strong>Telefon:</strong> ${order?.customer?.phone}</p>
+         <p><strong>E-posta:</strong> ${order?.customer?.email}</p>
+         <p><strong>Sipariş No:</strong> #${order?._id}</p>
+         <p><strong>Shopier Sipariş No:</strong> #${
+           order?.platform_order_id
+         }</p>
+         <p><strong>Toplam Tutar:</strong> ${order?.totalPrice} ₺</p>
+         <p><strong>Not:</strong> ${order?.note || "-"}</p>
+         <hr />
+         <p style="font-size: 13px; color: #888;">Kontrol için panele giriş yapabilirsiniz.</p>
+       </div>
+     `,
         });
-        const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
-        for (const adminEmail of adminEmails) {
-          await sendEmail({
-            to: adminEmail,
-            subject: `Yeni Sipariş Oluştu – #${order._id}`,
-            html: `
-         <div style="font-family: Arial, sans-serif; color: #333;">
-           <h2>Yeni Sipariş 🎯</h2>
-           <p><strong>Müşteri:</strong> ${order?.customer?.name}</p>
-           <p><strong>Telefon:</strong> ${order?.customer?.phone}</p>
-           <p><strong>E-posta:</strong> ${order?.customer?.email}</p>
-           <p><strong>Sipariş No:</strong> #${order?._id}</p>
-           <p><strong>Shopier Sipariş No:</strong> #${order?.platform_order_id}</p>
-           <p><strong>Toplam Tutar:</strong> ${order?.totalPrice} ₺</p>
-           <p><strong>Not:</strong> ${order?.note || "-"}</p>
-           <hr />
-           <p style="font-size: 13px; color: #888;">Kontrol için panele giriş yapabilirsiniz.</p>
-         </div>
-       `,
-          });
-        }
       }
 
       // Ödeme başarılı olduğunda iframe içinde gösterilecek JavaScript kodu
