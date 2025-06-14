@@ -172,7 +172,7 @@ exports.createPaymentLink = async (req, res) => {
       status: order.status || "pre_payment", // Siparişin durumu
       platform_order_id: order.platform_order_id, // Siparişe platform_order_id'yi ekliyoruz
       totalPrice: order.totalPrice,
-      address: address
+      address: address,
     });
 
     // 3. Siparişi müşteriye kaydet
@@ -212,7 +212,8 @@ exports.createPaymentLink = async (req, res) => {
     });
 
     // Total fiyatı Shopier'e gönderiyoruz
-    const paymentPage = shopier.generatePaymentHTML(order?.totalPrice);
+    //const paymentPage = shopier.generatePaymentHTML(order?.totalPrice);
+    const paymentPage = shopier.generatePaymentHTML(1);
 
     // 5. Ödeme linkini frontend'e gönder
     res.status(201).json({
@@ -249,10 +250,31 @@ exports.shopierCallback = async (req, res) => {
       // Müşteriye ödeme onayı gönder
       if (true) {
         await sendEmail({
-          to: "emrehrmn@gmail.com",
+          to: order?.customer?.email,
           subject: `Sipariş Ödeme Durumu – Ödeme Başarılı`,
-          html: `<p>Siparişinizin ödemesi başarıyla alınmıştır. Sipariş No: #${order._id}</p>`,
+          html: `<p>Siparişinizin ödemesi başarıyla alınmıştır 🎉. Sipariş No: #${order._id}</p>`,
         });
+        const adminEmails = process.env.ADMIN_EMAILS?.split(",") || [];
+        for (const adminEmail of adminEmails) {
+          await sendEmail({
+            to: adminEmail,
+            subject: `Yeni Sipariş Oluştu – #${order._id}`,
+            html: `
+         <div style="font-family: Arial, sans-serif; color: #333;">
+           <h2>Yeni Sipariş 🎯</h2>
+           <p><strong>Müşteri:</strong> ${order?.customer?.name}</p>
+           <p><strong>Telefon:</strong> ${order?.customer?.phone}</p>
+           <p><strong>E-posta:</strong> ${order?.customer?.email}</p>
+           <p><strong>Sipariş No:</strong> #${order?._id}</p>
+           <p><strong>Shopier Sipariş No:</strong> #${order?.platform_order_id}</p>
+           <p><strong>Toplam Tutar:</strong> ${order?.totalPrice} ₺</p>
+           <p><strong>Not:</strong> ${order?.note || "-"}</p>
+           <hr />
+           <p style="font-size: 13px; color: #888;">Kontrol için panele giriş yapabilirsiniz.</p>
+         </div>
+       `,
+          });
+        }
       }
 
       // Ödeme başarılı olduğunda iframe içinde gösterilecek JavaScript kodu
@@ -350,7 +372,7 @@ exports.shopierCallback = async (req, res) => {
 // ✅ Müşterinin tüm siparişlerini al
 exports.getCustomerOrders = async (req, res) => {
   try {
-    const customerId = req.customer._id;  // Middleware'den gelen müşteri bilgisi
+    const customerId = req.customer._id; // Middleware'den gelen müşteri bilgisi
 
     // Müşteriye ait tüm siparişleri getir
     const orders = await Order.find({ customer: customerId })
@@ -370,10 +392,10 @@ exports.getCustomerOrders = async (req, res) => {
 
 // ✅ Müşterinin belirli bir siparişini al
 exports.getCustomerOrder = async (req, res) => {
-  const { id } = req.params;  // Siparişin ID'si
+  const { id } = req.params; // Siparişin ID'si
 
   try {
-    const customerId = req.customer._id;  // Middleware'den gelen müşteri bilgisi
+    const customerId = req.customer._id; // Middleware'den gelen müşteri bilgisi
 
     // Siparişi müşteriyle ilişkilendirerek buluyoruz
     const order = await Order.findOne({ _id: id, customer: customerId })
@@ -390,4 +412,3 @@ exports.getCustomerOrder = async (req, res) => {
     res.status(500).json({ message: "Sipariş bulunamadı" });
   }
 };
-
